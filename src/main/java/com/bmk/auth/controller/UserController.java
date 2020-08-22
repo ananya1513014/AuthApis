@@ -1,6 +1,7 @@
 package com.bmk.auth.controller;
 
 import com.bmk.auth.exceptions.InvalidTokenException;
+import com.bmk.auth.exceptions.InvalidUserDetailsException;
 import com.bmk.auth.service.TokenService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.bmk.auth.bo.Response;
@@ -24,7 +25,6 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
-    private final static String AES_SECRET = System.getenv("aesSecret");
     private final UserService userService;
     private final TokenService tokenService;
     private static ObjectMapper objectMapper = new ObjectMapper();
@@ -40,7 +40,9 @@ public class UserController {
         logger.info("Signup", param);
 
         try{
-            userService.addUser(new User(objectMapper.readValue(param, UserBuilder.class)));
+            User user = new User(objectMapper.readValue(param, UserBuilder.class));
+            if(user.getEmail()==null||user.getEmail().equals("")||user.getPassword()==null||user.getPassword().length()<8) throw new InvalidUserDetailsException();
+            userService.addUser(user);
             return ResponseEntity.ok(new Response("200", "Sign up success"));
         } catch (DuplicateUserException exp){
             logger.info("Duplicate User Exception encountered for : ", param);
@@ -48,6 +50,9 @@ public class UserController {
         } catch (JsonProcessingException e) {
             logger.info("Json Processing Exception encountered for : ", param);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response("400", "Request format is wrong"));
+        } catch (InvalidUserDetailsException e) {
+            logger.info("Invalid user details : ", param);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response("406", "Username/Password is not as expected"));
         }
     }
 
