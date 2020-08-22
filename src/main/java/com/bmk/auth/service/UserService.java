@@ -2,6 +2,7 @@ package com.bmk.auth.service;
 
 import com.bmk.auth.bo.User;
 import com.bmk.auth.exceptions.DuplicateUserException;
+import com.bmk.auth.exceptions.InvalidUserDetailsException;
 import com.bmk.auth.repository.UserRepo;
 import com.bmk.auth.request.CredBuilder;
 import com.bmk.auth.util.Security;
@@ -30,9 +31,11 @@ public class UserService {
         return userRepo.save(user);
     }
 
-    public UserService verifyCred(CredBuilder credBuilder) {
+    public UserService verifyCred(CredBuilder credBuilder) throws InvalidUserDetailsException {
         logger.info("Verifying Credentials");
-        Assert.assertEquals(userRepo.findByEmail(credBuilder.getEmail()).getPassword(), Security.encrypt(credBuilder.getPassword(), AES_SECRET));
+        User user = userRepo.findByEmail(credBuilder.getEmail());
+        if(user==null)  throw new InvalidUserDetailsException();
+        Assert.assertEquals(user.getPassword(), Security.encrypt(credBuilder.getPassword(), AES_SECRET));
         logger.info("Credentials verified successfully");
         return this;
     }

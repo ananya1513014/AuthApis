@@ -61,12 +61,13 @@ public class UserController {
         logger.info(param, " Signin");
         try{
             CredBuilder credBuilder  = objectMapper.readValue(param, CredBuilder.class);
+            if(credBuilder.getEmail()==null||credBuilder.getPassword()==null) throw new InvalidUserDetailsException();
             userService.verifyCred(credBuilder);
             String token = tokenService.getToken(credBuilder.getEmail());
             HttpHeaders responseHeaders = new HttpHeaders();
             responseHeaders.set("token", token);
             return new ResponseEntity(new Response("200", "Login Success"), responseHeaders, HttpStatus.OK);
-        } catch (AssertionError e) {
+        } catch (AssertionError | InvalidUserDetailsException e) {
             logger.info("Invalid Credentials");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response("401", "Invalid credentials"));
         } catch (JsonProcessingException e) {
