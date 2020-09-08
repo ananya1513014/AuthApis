@@ -25,10 +25,11 @@ public class User {
     Date dateOfBirth;
     String gender;
     String phone;
+    String userType;
 
     public User(UserBuilder user){
         this.email = user.getEmail();
-        this.password = Security.encrypt(user.getPassword(), "sec");
+        this.password = Security.encrypt(user.getPassword(), System.getenv("aesSecret"));
         this.name = user.getName();
         try {
             this.dateOfBirth = new SimpleDateFormat("dd/MM/yyyy").parse(user.getDateOfBirth());

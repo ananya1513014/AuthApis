@@ -44,4 +44,8 @@ public class UserService {
         logger.info("Searching for static userid for email", email);
         return userRepo.findByEmail(email).getStaticUserId();
     }
+
+    public User getUserByEmail(String email){
+        return userRepo.findByEmail(email);
+    }
 }

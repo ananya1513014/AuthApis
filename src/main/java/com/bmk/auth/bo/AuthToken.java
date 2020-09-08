@@ -13,6 +13,6 @@ import javax.persistence.Id;
 @NoArgsConstructor
 public class AuthToken {
     @Id
-    String email;
+    String userId;
     String token;
 }

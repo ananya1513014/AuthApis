@@ -9,5 +9,5 @@ import java.util.HashMap;
 @AllArgsConstructor
 public class Response {
     String responseCode;
-    String message;
+    Object message;
 }

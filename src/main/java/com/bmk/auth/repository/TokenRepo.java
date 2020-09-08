@@ -4,5 +4,5 @@ import com.bmk.auth.bo.AuthToken;
 import org.springframework.data.repository.CrudRepository;
 
 public interface TokenRepo extends CrudRepository<AuthToken, String> {
-    AuthToken findByEmail(String email);
+    AuthToken findByUserId(String userId);
 }
