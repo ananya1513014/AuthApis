@@ -2,6 +2,7 @@ package com.bmk.auth.controller;
 
 import com.bmk.auth.exceptions.InvalidTokenException;
 import com.bmk.auth.exceptions.InvalidUserDetailsException;
+import com.bmk.auth.response.out.LoginResponse;
 import com.bmk.auth.service.TokenService;
 import com.bmk.auth.util.Security;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -80,7 +81,7 @@ public class UserController {
             String token = tokenService.getToken(userService.getUserByEmail(credBuilder.getEmail()));
             HttpHeaders responseHeaders = new HttpHeaders();
             responseHeaders.set("token", token);
-            return new ResponseEntity(new Response("200", "Login Success"), responseHeaders, HttpStatus.OK);
+            return new ResponseEntity(new LoginResponse("200", "Login Success", token), responseHeaders, HttpStatus.OK);
         } catch (AssertionError | InvalidUserDetailsException e) {
             logger.info("Invalid Credentials");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response("401", "Invalid credentials"));
