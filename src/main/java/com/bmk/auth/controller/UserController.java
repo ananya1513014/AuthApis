@@ -46,11 +46,7 @@ public class UserController {
             User user = new User(objectMapper.readValue(param, UserBuilder.class));
             if(user.getEmail()==null||user.getEmail().equals("")||user.getPassword()==null||user.getPassword().length()<8) throw new InvalidUserDetailsException();
 
-            if(user.getUserType()==null){
-                user.setUserType(Constants.CLIENT);
-            } else if(user.getUserType().equals(Constants.MERCHANT)){
-                tokenService.authorizeApi(token, Constants.ADMIN_ACCESS);
-            } else if(user.getUserType().equals(Constants.ADMIN)||user.getUserType().equals(Constants.SUPERUSER)){
+            if(user.getUserType().equals(Constants.ADMIN)||user.getUserType().equals(Constants.SUPERUSER)){
                 tokenService.authorizeApi(token, Constants.SUPERUSER_ACCESS);
             }else {
                 user.setUserType(Constants.CLIENT);
