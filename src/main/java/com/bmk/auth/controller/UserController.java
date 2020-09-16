@@ -42,6 +42,7 @@ public class UserController {
         logger.info("Signup", param);
 
         try{
+            logger.info(objectMapper.readValue(param, UserBuilder.class).toString());
             User user = new User(objectMapper.readValue(param, UserBuilder.class));
             if(user.getEmail()==null||user.getEmail().equals("")||user.getPassword()==null||user.getPassword().length()<8) throw new InvalidUserDetailsException();
 
