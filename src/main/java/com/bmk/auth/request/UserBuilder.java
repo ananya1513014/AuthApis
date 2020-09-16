@@ -12,4 +12,5 @@ public class UserBuilder {
     String dateOfBirth;
     String gender;
     String phone;
+    String userType;
 }
