@@ -50,8 +50,6 @@ public class UserController {
                 user.setUserType(Constants.CLIENT);
             }else if(user.getUserType().equals(Constants.ADMIN)||user.getUserType().equals(Constants.SUPERUSER)){
                 tokenService.authorizeApi(token, Constants.SUPERUSER_ACCESS);
-            }else {
-                user.setUserType(Constants.CLIENT);
             }
             userService.addUser(user);
             return ResponseEntity.ok(new Response("200", "Sign up success"));
