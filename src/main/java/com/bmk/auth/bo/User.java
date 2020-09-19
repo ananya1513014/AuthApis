@@ -38,5 +38,6 @@ public class User {
         }
         this.gender = user.getGender();
         this.phone = user.getPhone();
+        this.userType = user.getUserType();
     }
 }

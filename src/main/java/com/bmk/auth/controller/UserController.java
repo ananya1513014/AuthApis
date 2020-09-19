@@ -52,6 +52,7 @@ public class UserController {
                 tokenService.authorizeApi(token, Constants.SUPERUSER_ACCESS);
             }
             userService.addUser(user);
+            System.out.println(user);
             return ResponseEntity.ok(new Response("200", "Sign up success"));
         } catch (DuplicateUserException e){
             logger.info("Duplicate User Exception encountered for : ", param, e);
