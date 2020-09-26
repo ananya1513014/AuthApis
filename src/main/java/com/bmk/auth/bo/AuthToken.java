@@ -15,4 +15,5 @@ public class AuthToken {
     @Id
     String userId;
     String token;
+    String deviceId;
 }

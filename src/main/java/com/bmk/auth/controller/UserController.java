@@ -1,15 +1,17 @@
 package com.bmk.auth.controller;
 
+import com.bmk.auth.bo.AuthToken;
 import com.bmk.auth.exceptions.InvalidTokenException;
 import com.bmk.auth.exceptions.InvalidUserDetailsException;
+import com.bmk.auth.exceptions.SessionNotFoundException;
+import com.bmk.auth.response.out.DeviceIdResponse;
 import com.bmk.auth.response.out.LoginResponse;
 import com.bmk.auth.service.TokenService;
-import com.bmk.auth.util.Security;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.bmk.auth.bo.Response;
+import com.bmk.auth.response.out.Response;
 import com.bmk.auth.bo.User;
 import com.bmk.auth.exceptions.DuplicateUserException;
-import com.bmk.auth.request.CredBuilder;
+import com.bmk.auth.request.LoginRequest;
 import com.bmk.auth.request.UserBuilder;
 import com.bmk.auth.service.UserService;
 import com.bmk.auth.util.Constants;
@@ -43,16 +45,16 @@ public class UserController {
 
         try{
             logger.info(objectMapper.readValue(param, UserBuilder.class).toString());
+
             User user = new User(objectMapper.readValue(param, UserBuilder.class));
             if(user.getEmail()==null||user.getEmail().equals("")||user.getPassword()==null||user.getPassword().length()<8) throw new InvalidUserDetailsException();
 
-            if(user.getUserType()==null){
-                user.setUserType(Constants.CLIENT);
-            }else if(user.getUserType().equals(Constants.ADMIN)||user.getUserType().equals(Constants.SUPERUSER)){
+            if(user.getUserType()==null)    user.setUserType(Constants.CLIENT);
+
+            if(user.getUserType().equals(Constants.ADMIN)||user.getUserType().equals(Constants.SUPERUSER)){
                 tokenService.authorizeApi(token, Constants.SUPERUSER_ACCESS);
             }
             userService.addUser(user);
-            System.out.println(user);
             return ResponseEntity.ok(new Response("200", "Sign up success"));
         } catch (DuplicateUserException e){
             logger.info("Duplicate User Exception encountered for : ", param, e);
@@ -73,10 +75,11 @@ public class UserController {
     private ResponseEntity login(@RequestBody String param){
         logger.info(param, " Signin");
         try{
-            CredBuilder credBuilder  = objectMapper.readValue(param, CredBuilder.class);
-            if(credBuilder.getEmail()==null||credBuilder.getPassword()==null) throw new InvalidUserDetailsException();
-            userService.verifyCred(credBuilder);
-            String token = tokenService.getToken(userService.getUserByEmail(credBuilder.getEmail()));
+            LoginRequest loginRequest = objectMapper.readValue(param, LoginRequest.class);
+            if(loginRequest.getEmail()==null|| loginRequest.getPassword()==null) throw new InvalidUserDetailsException();
+            userService.verifyCred(loginRequest);
+            User user = userService.getUserByEmail(loginRequest.getEmail());
+            String token = tokenService.saveAuthToken(new AuthToken(user.getStaticUserId().toString(), tokenService.getToken(user), loginRequest.getDeviceId())).getToken();
             HttpHeaders responseHeaders = new HttpHeaders();
             responseHeaders.set("token", token);
             return new ResponseEntity(new LoginResponse("200", "Login Success", token), responseHeaders, HttpStatus.OK);
@@ -98,6 +101,18 @@ public class UserController {
         } catch (AssertionError | InvalidTokenException e){
             logger.info("Invalid Token Received");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response("401", "Invalid Token"));
+        }
+    }
+
+    @GetMapping("/deviceId")
+    private ResponseEntity getDeviceId(@RequestParam Long userId){
+        try {
+            String deviceId = tokenService.getDeviceId(userId);
+            return ResponseEntity.ok(new DeviceIdResponse("200", "Success", deviceId));
+        } catch (SessionNotFoundException e){
+              return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(new Response("406", "Session not found"));
+        } catch(Exception e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response("510", "Unknown Expception occured."));
         }
     }
 }

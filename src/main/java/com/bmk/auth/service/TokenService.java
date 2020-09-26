@@ -3,6 +3,7 @@ package com.bmk.auth.service;
 import com.bmk.auth.bo.AuthToken;
 import com.bmk.auth.bo.User;
 import com.bmk.auth.exceptions.InvalidTokenException;
+import com.bmk.auth.exceptions.SessionNotFoundException;
 import com.bmk.auth.repository.TokenRepo;
 import com.bmk.auth.util.Constants;
 import io.jsonwebtoken.Claims;
@@ -54,7 +55,8 @@ public class TokenService {
             Date exp = new Date(expMillis);
             builder.setExpiration(exp);
         }
-        return saveAuthToken(new AuthToken(user.getStaticUserId().toString(), builder.compact())).getToken();
+        return builder.compact();
+//        return saveAuthToken(new AuthToken(user.getStaticUserId().toString(), builder.compact())).getToken();
     }
 
      public void authorizeApi(String token, String apiType) throws InvalidTokenException {
@@ -84,5 +86,11 @@ public class TokenService {
         return Jwts.parser()
                 .setSigningKey(DatatypeConverter.parseBase64Binary(SECRET_KEY))
                 .parseClaimsJws(jwt).getBody();
+    }
+
+    public String getDeviceId(Long userId) throws SessionNotFoundException {
+        String deviceId = tokenRepo.findByUserId(userId.toString()).getDeviceId();
+        if(deviceId==null) throw new SessionNotFoundException();
+        return deviceId;
     }
 }

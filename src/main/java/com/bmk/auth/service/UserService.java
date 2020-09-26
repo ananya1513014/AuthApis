@@ -4,7 +4,7 @@ import com.bmk.auth.bo.User;
 import com.bmk.auth.exceptions.DuplicateUserException;
 import com.bmk.auth.exceptions.InvalidUserDetailsException;
 import com.bmk.auth.repository.UserRepo;
-import com.bmk.auth.request.CredBuilder;
+import com.bmk.auth.request.LoginRequest;
 import com.bmk.auth.util.Security;
 import org.junit.Assert;
 import org.slf4j.Logger;
@@ -31,11 +31,11 @@ public class UserService {
         return userRepo.save(user);
     }
 
-    public UserService verifyCred(CredBuilder credBuilder) throws InvalidUserDetailsException {
+    public UserService verifyCred(LoginRequest loginRequest) throws InvalidUserDetailsException {
         logger.info("Verifying Credentials");
-        User user = userRepo.findByEmail(credBuilder.getEmail());
+        User user = userRepo.findByEmail(loginRequest.getEmail());
         if(user==null)  throw new InvalidUserDetailsException();
-        Assert.assertEquals(user.getPassword(), Security.encrypt(credBuilder.getPassword(), AES_SECRET));
+        Assert.assertEquals(user.getPassword(), Security.encrypt(loginRequest.getPassword(), AES_SECRET));
         logger.info("Credentials verified successfully");
         return this;
     }

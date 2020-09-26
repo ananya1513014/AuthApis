@@ -5,4 +5,4 @@ import org.springframework.data.repository.CrudRepository;
 
 public interface TokenRepo extends CrudRepository<AuthToken, String> {
     AuthToken findByUserId(String userId);
-}
+ }

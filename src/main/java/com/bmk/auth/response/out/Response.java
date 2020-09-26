@@ -1,4 +1,4 @@
-package com.bmk.auth.bo;
+package com.bmk.auth.response.out;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
