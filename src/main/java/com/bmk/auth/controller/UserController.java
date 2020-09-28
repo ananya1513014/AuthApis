@@ -115,4 +115,17 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response("510", "Unknown Expception occured."));
         }
     }
+
+    @GetMapping("/details")
+    private ResponseEntity getUserDetails(@RequestHeader String token) {
+        try {
+            String userId = tokenService.getUserId(token);
+            User user = userService.getUserById(Long.parseLong(userId));
+            user.setPassword("*HIDDEN*");
+            return ResponseEntity.ok(new Response("200", user));
+        } catch(InvalidTokenException | InvalidUserDetailsException e){
+            logger.info("Invalid token recieved");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response("406", "Invalid token received"));
+        }
+    }
 }

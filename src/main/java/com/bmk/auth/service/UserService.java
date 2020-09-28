@@ -48,4 +48,10 @@ public class UserService {
     public User getUserByEmail(String email){
         return userRepo.findByEmail(email);
     }
+
+    public User getUserById(Long userId) throws InvalidUserDetailsException {
+        User user =  userRepo.findByStaticUserId(userId);
+        if(user==null)  throw new InvalidUserDetailsException();
+        return user;
+    }
 }

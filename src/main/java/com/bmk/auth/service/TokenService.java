@@ -66,11 +66,11 @@ public class TokenService {
         Assert.assertTrue(tokenBo.getToken().equals(token));
     }
 
-    public String getUserId(String jwt) {
+    public String getUserId(String jwt) throws InvalidTokenException {
         try {
             return getClaim(jwt).getId();
         } catch(Exception exp){
-            return null;
+            throw new InvalidTokenException();
         }
     }
 
