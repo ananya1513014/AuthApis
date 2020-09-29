@@ -54,11 +54,11 @@ public class UserController {
             if(user.getUserType().equals(Constants.ADMIN)||user.getUserType().equals(Constants.SUPERUSER)){
                 tokenService.authorizeApi(token, Constants.SUPERUSER_ACCESS);
             }
-            userService.addUser(user);
-            return ResponseEntity.ok(new Response("200", "Sign up success"));
+            user = userService.addUser(user);
+            return ResponseEntity.ok(new Response("200", "Sign up success:"+user.getStaticUserId()));
         } catch (DuplicateUserException e){
             logger.info("Duplicate User Exception encountered for : ", param, e);
-            return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(new Response("412", "User exists with the specified ID"));
+            return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(new Response("417", "User exists with the specified ID"));
         }catch (InvalidUserDetailsException e) {
             logger.info("Invalid user details : ", param, e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response("406", "Username/Password is not as expected"));
