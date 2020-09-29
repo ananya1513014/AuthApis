@@ -117,9 +117,10 @@ public class UserController {
     }
 
     @GetMapping("/details")
-    private ResponseEntity getUserDetails(@RequestHeader String token) {
+    private ResponseEntity getUserDetails(@RequestHeader String token, @RequestParam String userId) {
         try {
-            String userId = tokenService.getUserId(token);
+            if(userId.equals("")||userId==null)
+                userId = tokenService.getUserId(token);
             User user = userService.getUserById(Long.parseLong(userId));
             user.setPassword("*HIDDEN*");
             return ResponseEntity.ok(new Response("200", user));
