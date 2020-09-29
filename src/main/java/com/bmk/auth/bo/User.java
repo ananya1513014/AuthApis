@@ -33,7 +33,7 @@ public class User {
         this.name = user.getName();
         try {
             this.dateOfBirth = new SimpleDateFormat("dd/MM/yyyy").parse(user.getDateOfBirth());
-        } catch (ParseException e) {
+        } catch (ParseException|NullPointerException e) {
             this.dateOfBirth = null;
         }
         this.gender = user.getGender();
