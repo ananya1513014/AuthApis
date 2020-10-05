@@ -9,7 +9,7 @@ public class Constants {
     public static final String SECRET_PARAM_KEY = "jwtSecret";
     public static final String SUPERUSER_ACCESS = "alpha,beta,gamma,delta";
     public static final String ADMIN_ACCESS = "beta,gamma,delta";
-    public static final String MERCHANT_ACCESS = "gamma";
+    public static final String MERCHANT_ACCESS = "gamma,delta";
     public static final String CLIENT_ACCESS = "delta";
     public static final String SUPERUSER = "superuser";
     public static final String ADMIN = "admin";
