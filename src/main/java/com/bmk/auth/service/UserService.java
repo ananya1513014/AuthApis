@@ -12,6 +12,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class UserService {
 
@@ -53,5 +55,9 @@ public class UserService {
         User user =  userRepo.findByStaticUserId(userId);
         if(user==null)  throw new InvalidUserDetailsException();
         return user;
+    }
+
+    public User[] getAllUsers() {
+        return userRepo.findAllByStaticUserIdAfter(Long.parseLong("0"));
     }
 }

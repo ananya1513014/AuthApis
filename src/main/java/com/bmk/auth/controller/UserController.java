@@ -129,4 +129,16 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response("406", "Invalid token received"));
         }
     }
+
+    @GetMapping("/all")
+    private ResponseEntity getAllUsers(@RequestHeader String token) {
+        try {
+            tokenService.authorizeApi(token, "alpha");
+            User[] users = userService.getAllUsers();
+            return ResponseEntity.ok(users);
+        } catch (InvalidTokenException e) {
+            logger.info("Invalid token recieved");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response("406", "Invalid token received"));
+        }
+    }
 }
