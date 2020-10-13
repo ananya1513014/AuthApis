@@ -6,6 +6,7 @@ import com.bmk.auth.exceptions.InvalidUserDetailsException;
 import com.bmk.auth.exceptions.SessionNotFoundException;
 import com.bmk.auth.response.out.DeviceIdResponse;
 import com.bmk.auth.response.out.LoginResponse;
+import com.bmk.auth.response.out.UserListResponse;
 import com.bmk.auth.service.TokenService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.bmk.auth.response.out.Response;
@@ -135,7 +136,7 @@ public class UserController {
         try {
             tokenService.authorizeApi(token, "alpha");
             User[] users = userService.getAllUsers();
-            return ResponseEntity.ok(users);
+            return ResponseEntity.ok(new UserListResponse("200", "Success", users));
         } catch (InvalidTokenException e) {
             logger.info("Invalid token recieved");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response("406", "Invalid token received"));
