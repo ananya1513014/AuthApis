@@ -41,7 +41,7 @@ public class UserController {
     }
 
     @PostMapping("/signup")
-    private ResponseEntity createUser(@RequestBody String param, @RequestHeader String token){
+    private ResponseEntity createUser(@RequestBody String param, @RequestHeader(required = false) String token){
         logger.info("Signup", param);
 
         try{
