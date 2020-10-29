@@ -118,7 +118,7 @@ public class UserController {
     }
 
     @GetMapping("/details")
-    private ResponseEntity getUserDetails(@RequestHeader String token, @RequestParam String userId) {
+    private ResponseEntity getUserDetails(@RequestHeader String token, @RequestParam(required = false) String userId) {
         try {
             if(userId.equals("")||userId==null)
                 userId = tokenService.getUserId(token);
