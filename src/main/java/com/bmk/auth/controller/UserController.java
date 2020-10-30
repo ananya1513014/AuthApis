@@ -1,17 +1,20 @@
 package com.bmk.auth.controller;
 
 import com.bmk.auth.bo.AuthToken;
-import com.bmk.auth.exceptions.InvalidTokenException;
-import com.bmk.auth.exceptions.InvalidUserDetailsException;
-import com.bmk.auth.exceptions.SessionNotFoundException;
+import com.bmk.auth.cache.OtpCache;
+import com.bmk.auth.exceptions.*;
+import com.bmk.auth.request.OtpVal;
+import com.bmk.auth.request.SignupVal;
 import com.bmk.auth.response.out.DeviceIdResponse;
 import com.bmk.auth.response.out.LoginResponse;
 import com.bmk.auth.response.out.UserListResponse;
 import com.bmk.auth.service.TokenService;
+import com.bmk.auth.util.Helper;
+import com.bmk.auth.util.RestClient;
+import com.bmk.auth.util.Security;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.bmk.auth.response.out.Response;
 import com.bmk.auth.bo.User;
-import com.bmk.auth.exceptions.DuplicateUserException;
 import com.bmk.auth.request.LoginRequest;
 import com.bmk.auth.request.UserBuilder;
 import com.bmk.auth.service.UserService;
@@ -29,10 +32,12 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 public class UserController {
 
-    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
+    private static final Logger logger = LoggerFactory.getLogger(UserController.class);
     private final UserService userService;
     private final TokenService tokenService;
     private static ObjectMapper objectMapper = new ObjectMapper();
+    private static final String ENCRYPT_KEY_A = System.getenv("encryptKeyA");
+    private static final String ENCRYPT_KEY_B = System.getenv("encryptKeyB");
 
     @Autowired
     public UserController(UserService userService, TokenService tokenService) {
@@ -48,6 +53,11 @@ public class UserController {
             logger.info(objectMapper.readValue(param, UserBuilder.class).toString());
 
             User user = new User(objectMapper.readValue(param, UserBuilder.class));
+
+            if(Security.decrypt(token, ENCRYPT_KEY_B)==null) throw new InvalidUserDetailsException();
+            if(Security.decrypt(Security.decrypt(token, ENCRYPT_KEY_B), ENCRYPT_KEY_A)==null) throw new InvalidUserDetailsException();
+            if(!Security.decrypt(Security.decrypt(token, ENCRYPT_KEY_B), ENCRYPT_KEY_A).equals(user.getEmail()+"|"+user.getPhone())) throw new InvalidUserDetailsException();
+
             if(user.getEmail()==null||user.getEmail().equals("")||user.getPassword()==null||user.getPassword().length()<8) throw new InvalidUserDetailsException();
 
             if(user.getUserType()==null)    user.setUserType(Constants.CLIENT);
@@ -141,5 +151,33 @@ public class UserController {
             logger.info("Invalid token recieved");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response("406", "Invalid token received"));
         }
+    }
+
+    @PostMapping("verifyUniqueDetails")
+    private  ResponseEntity validateDetails(@RequestBody String param) throws JsonProcessingException, DuplicateUserException {
+        SignupVal signupVal = objectMapper.readValue(param, SignupVal.class);
+
+        if(userService.getUserByEmail(signupVal.getEmail())!=null)
+            throw new DuplicateUserException("User with given email exists");
+
+        if(userService.getUserByPhone(signupVal.getPhone())!=null)
+            throw new DuplicateUserException("User with given phone number exists");
+
+        int otp = Helper.generateOtp();
+        OtpCache.map.put(signupVal.getPhone(), otp);
+        RestClient.sendOtp(signupVal.getPhone(), otp);
+        return  ResponseEntity.status(HttpStatus.OK).body(new LoginResponse("200", "Success", Security.encrypt(signupVal.getEmail()+"|"+signupVal.getPhone(), ENCRYPT_KEY_A)));
+    }
+
+    @PutMapping("validateOtp")
+    private ResponseEntity validateOtp(@RequestHeader String token, @RequestBody String param) throws JsonProcessingException, InvalidOtpException {
+        OtpVal otpVal = objectMapper.readValue(param, OtpVal.class);
+        String phone = Security.decrypt(token, ENCRYPT_KEY_A).split("\\|")[1];
+        logger.info(phone);
+        Integer expectedOtp = OtpCache.map.get(phone);
+        logger.info(expectedOtp.toString());
+        if(expectedOtp==null)   throw new InvalidOtpException();
+        if(expectedOtp!=otpVal.getOtp()) throw new InvalidOtpException();
+        return  ResponseEntity.status(HttpStatus.OK).body(new LoginResponse("200", "Success", Security.encrypt(token, ENCRYPT_KEY_B)));
     }
 }
