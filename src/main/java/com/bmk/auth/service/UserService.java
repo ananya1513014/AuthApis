@@ -60,4 +60,8 @@ public class UserService {
     public User[] getAllUsers() {
         return userRepo.findAllByStaticUserIdAfter(Long.parseLong("0"));
     }
+
+    public User getUserByPhone(String phoneNumber) {
+        return userRepo.findByPhone(phoneNumber);
+    }
 }
