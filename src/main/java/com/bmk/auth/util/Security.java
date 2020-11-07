@@ -48,6 +48,7 @@ public class Security {
 
     public static String decrypt(String strToDecrypt, String secret)
     {
+        if(strToDecrypt==null)  return null;
         try
         {
             setKey(secret);
