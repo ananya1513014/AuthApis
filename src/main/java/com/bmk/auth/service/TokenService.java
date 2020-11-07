@@ -60,10 +60,8 @@ public class TokenService {
     }
 
      public void authorizeApi(String token, String apiType) throws InvalidTokenException {
-        AuthToken tokenBo = tokenRepo.findByUserId(getUserId(token));
         System.out.println(getUserId(token)+" "+apiType+" "+accessMap.get(getUserType(token)));
-        if(!accessMap.get(getUserType(token)).contains(apiType)||tokenBo==null) throw new InvalidTokenException();
-        Assert.assertTrue(tokenBo.getToken().equals(token));
+        if(!accessMap.get(getUserType(token)).contains(apiType)) throw new InvalidTokenException();
     }
 
     public String getUserId(String jwt) throws InvalidTokenException {

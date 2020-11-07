@@ -14,6 +14,5 @@ import javax.persistence.Id;
 public class AuthToken {
     @Id
     String userId;
-    String token;
     String deviceId;
 }

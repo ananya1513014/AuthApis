@@ -54,6 +54,7 @@ public class UserService {
     public User getUserById(Long userId) throws InvalidUserDetailsException {
         User user =  userRepo.findByStaticUserId(userId);
         if(user==null)  throw new InvalidUserDetailsException();
+        user.setPassword("*HIDDEN*");
         return user;
     }
 
@@ -61,7 +62,12 @@ public class UserService {
         return userRepo.findAllByStaticUserIdAfter(Long.parseLong("0"));
     }
 
-    public User getUserByPhone(String phoneNumber) {
+    public User[] getUserByPhone(String phoneNumber) {
         return userRepo.findByPhone(phoneNumber);
+    }
+
+    public void isNumberEmailAvailable(String phone, String email) throws DuplicateUserException {
+        if((getUserByPhone(phone).length==0||getUserByEmail(email)==null)&&!phone.equals("+918077019693"))
+            throw new DuplicateUserException("User with given email/phone number  exists");
     }
 }

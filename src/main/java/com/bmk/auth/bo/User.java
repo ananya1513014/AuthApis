@@ -1,43 +1,36 @@
 package com.bmk.auth.bo;
 
-import com.bmk.auth.request.UserBuilder;
-import com.bmk.auth.util.Security;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.util.Date;
 
 @Entity
 @Data
 @NoArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class User {
     @Id
     @GeneratedValue
     Long staticUserId;
+    @NotNull
     String email;
+    @NotNull
+    @Size(min = 8, max = 24)
     String password;
+    @NotNull
     String name;
     Date dateOfBirth;
     String gender;
+    @NotNull
+    @Size(min = 13, max = 13)
     String phone;
-    String userType;
-
-    public User(UserBuilder user){
-        this.email = user.getEmail();
-        this.password = Security.encrypt(user.getPassword(), System.getenv("aesSecret"));
-        this.name = user.getName();
-        try {
-            this.dateOfBirth = new SimpleDateFormat("dd/MM/yyyy").parse(user.getDateOfBirth());
-        } catch (ParseException|NullPointerException e) {
-            this.dateOfBirth = null;
-        }
-        this.gender = user.getGender();
-        this.phone = user.getPhone();
-        this.userType = user.getUserType();
-    }
+    String userType = "client";
 }
