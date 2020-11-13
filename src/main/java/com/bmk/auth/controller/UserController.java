@@ -1,6 +1,5 @@
 package com.bmk.auth.controller;
 
-import com.bmk.auth.cache.OtpCache;
 import com.bmk.auth.exceptions.*;
 import com.bmk.auth.request.OtpVal;
 import com.bmk.auth.request.SignupVal;
@@ -23,8 +22,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.TransactionSystemException;
 import org.springframework.web.bind.annotation.*;
-
-import javax.validation.ConstraintViolationException;
 
 @RequestMapping(Constants.USER_ENDPOINT)
 @RestController
@@ -105,15 +102,15 @@ public class UserController {
     private  ResponseEntity validateDetails(@RequestBody String param) throws JsonProcessingException, DuplicateUserException {
         SignupVal signupVal = objectMapper.readValue(param, SignupVal.class);
         userService.isNumberEmailAvailable(signupVal.getPhone(), signupVal.getEmail());
-        RestClient.sendOtp(signupVal.getPhone());
-        return  ResponseEntity.status(HttpStatus.OK).body(new LoginResponse("200", "Success", Security.encrypt(signupVal.getEmail()+"|"+signupVal.getPhone(), ENCRYPT_KEY_A)));
+        int otp = RestClient.sendOtp(signupVal.getPhone());
+        return  ResponseEntity.status(HttpStatus.OK).body(new LoginResponse("200", "Success", Security.encrypt(signupVal.getEmail()+"|"+signupVal.getPhone()+"|"+otp, ENCRYPT_KEY_A)));
     }
 
     @PutMapping("validateOtp")
     private ResponseEntity validateOtp(@RequestHeader String token, @RequestBody String param) throws JsonProcessingException, InvalidOtpException {
         OtpVal otpVal = objectMapper.readValue(param, OtpVal.class);
-        String phone = Security.decrypt(token, ENCRYPT_KEY_A).split("\\|")[1];
-        if(OtpCache.map.get(phone)!=otpVal.getOtp()) throw new InvalidOtpException();
+        int otp = Integer.parseInt(Security.decrypt(token, ENCRYPT_KEY_A).split("\\|")[2]);
+        if(otp!=otpVal.getOtp()) throw new InvalidOtpException();
         return  ResponseEntity.status(HttpStatus.OK).body(new LoginResponse("200", "Success", Security.encrypt(token, ENCRYPT_KEY_B)));
     }
 }

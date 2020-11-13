@@ -13,6 +13,6 @@ public class Helper {
     }
 
     public static void validateSignup(User user, String token) throws InvalidTokenException {
-        if(!StringUtil.equals(Security.decrypt(Security.decrypt(token, ENCRYPT_KEY_B), ENCRYPT_KEY_A),user.getEmail()+"|"+user.getPhone())) throw new InvalidTokenException();
+        if(!StringUtil.contains(Security.decrypt(Security.decrypt(token, ENCRYPT_KEY_B), ENCRYPT_KEY_A),user.getEmail()+"|"+user.getPhone())) throw new InvalidTokenException();
     }
 }

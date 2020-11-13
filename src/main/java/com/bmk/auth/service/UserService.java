@@ -67,7 +67,7 @@ public class UserService {
     }
 
     public void isNumberEmailAvailable(String phone, String email) throws DuplicateUserException {
-        if((getUserByPhone(phone).length==0||getUserByEmail(email)==null)&&!phone.equals("+918077019693"))
+        if((getUserByPhone(phone).length!=0||getUserByEmail(email)!=null)&&!phone.equals("+918077019693"))
             throw new DuplicateUserException("User with given email/phone number  exists");
     }
 }

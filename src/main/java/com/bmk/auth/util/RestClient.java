@@ -1,6 +1,5 @@
 package com.bmk.auth.util;
 
-import com.bmk.auth.cache.OtpCache;
 import com.twilio.Twilio;
 import com.twilio.rest.api.v2010.account.Message;
 import com.twilio.type.PhoneNumber;
@@ -12,10 +11,9 @@ public class RestClient {
     public static final String AUTH_TOKEN = System.getenv("twilioToken");
     public static final String TWILIO_PHONE = System.getenv("twilioPhone");
 
-    public static void sendOtp(String phoneNumber) {
+    public static int sendOtp(String phoneNumber) {
         log.info("Sending otp to " + phoneNumber);
         int otp = Helper.generateOtp();
-        OtpCache.map.put(phoneNumber, otp);
 
         Twilio.init(ACCOUNT_SID, AUTH_TOKEN);
 
@@ -26,6 +24,7 @@ public class RestClient {
                 .create();
 
         log.info(message.getSid());
+        return otp;
     }
 
 }
