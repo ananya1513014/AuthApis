@@ -69,6 +69,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse("400", "Request has some invalid values", invalidFieldResponseList));
     }
 
+    @ExceptionHandler(SessionNotFoundException.class)
+    private ResponseEntity exceptionHandler(SessionNotFoundException e) {
+        logger.info(e);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response("400", e.getMessage()));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity exceptionHandler(Exception e) {
         logger.info(e);

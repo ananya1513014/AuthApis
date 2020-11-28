@@ -77,13 +77,9 @@ public class UserController {
     }
 
     @GetMapping("/deviceId")
-    private ResponseEntity getDeviceId(@RequestParam Long userId){
-        try {
+    private ResponseEntity getDeviceId(@RequestParam Long userId) throws SessionNotFoundException {
             String deviceId = tokenService.getDeviceId(userId);
             return ResponseEntity.ok(new DeviceIdResponse("200", "Success", deviceId));
-        } catch (SessionNotFoundException e){
-              return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(new Response("406", "Session not found"));
-        }
     }
 
     @GetMapping("/details")
