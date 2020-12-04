@@ -87,8 +87,10 @@ public class TokenService {
     }
 
     public String getDeviceId(Long userId) throws SessionNotFoundException {
-        String deviceId = tokenRepo.findByUserId(userId.toString()).getDeviceId();
-        if(deviceId==null) throw new SessionNotFoundException();
+        AuthToken token = tokenRepo.findByUserId(userId.toString());
+        if(token==null) return null;
+        String deviceId = token.getDeviceId();
+        if(deviceId==null) return null;
         return deviceId;
     }
 }
