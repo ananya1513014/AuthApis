@@ -17,6 +17,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.TransactionSystemException;
@@ -65,7 +66,12 @@ public class UserController {
         User user = userService.getUserByEmail(loginRequest.getEmail());
         user.setDeviceId(loginRequest.getDeviceId());
         userService.addUser(user);
-        return new ResponseEntity(new LoginResponse("200", "Login Success", TokenUtil.getToken(user)), HttpStatus.OK);
+
+        String token = TokenUtil.getToken(user);
+        TokenUtil.getToken(user);
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.set("token", token);
+        return new ResponseEntity(new LoginResponse("200", "Login Success", token), responseHeaders, HttpStatus.OK);
     }
 
     @PostMapping("/authorize")
