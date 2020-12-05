@@ -68,7 +68,6 @@ public class UserController {
         userService.addUser(user);
 
         String token = TokenUtil.getToken(user);
-        TokenUtil.getToken(user);
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.set("token", token);
         return new ResponseEntity(new LoginResponse("200", "Login Success", token), responseHeaders, HttpStatus.OK);
