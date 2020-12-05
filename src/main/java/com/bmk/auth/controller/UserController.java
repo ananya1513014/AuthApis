@@ -2,6 +2,7 @@ package com.bmk.auth.controller;
 
 import com.bmk.auth.exceptions.*;
 import com.bmk.auth.request.OtpVal;
+import com.bmk.auth.request.PasswordReset;
 import com.bmk.auth.request.SignupVal;
 import com.bmk.auth.response.out.DeviceIdResponse;
 import com.bmk.auth.response.out.LoginResponse;
@@ -32,8 +33,8 @@ public class UserController {
 
     private static final Logger logger = LoggerFactory.getLogger(UserController.class);
     private final UserService userService;
-    private static ObjectMapper objectMapper = new ObjectMapper();
 
+    TokenUtil tokenUtil = new TokenUtil();
     private static final String ENCRYPT_KEY_A = System.getenv("encryptKeyA");
     private static final String ENCRYPT_KEY_B = System.getenv("encryptKeyB");
     private static final String AES_SECRET = System.getenv("aesSecret");
@@ -100,7 +101,7 @@ public class UserController {
     @PostMapping("verifyUniqueDetails")
     private  ResponseEntity validateDetails(@RequestBody SignupVal signupVal) throws DuplicateUserException {
         userService.isNumberEmailAvailable(signupVal.getPhone(), signupVal.getEmail());
-        int otp = RestClient.sendOtp(signupVal.getPhone());
+        int otp = SmsUtil.sendNewUserOtp(signupVal.getPhone());
         return  ResponseEntity.status(HttpStatus.OK).body(new LoginResponse("200", "Success", Security.encrypt(signupVal.getEmail()+"|"+signupVal.getPhone()+"|"+otp, ENCRYPT_KEY_A)));
     }
 
@@ -109,5 +110,24 @@ public class UserController {
         int otp = Integer.parseInt(Security.decrypt(token, ENCRYPT_KEY_A).split("\\|")[2]);
         if(otp!=otpVal.getOtp()) throw new InvalidOtpException();
         return  ResponseEntity.status(HttpStatus.OK).body(new LoginResponse("200", "Success", Security.encrypt(token, ENCRYPT_KEY_B)));
+    }
+
+    @PutMapping("forgotPassword")
+    private ResponseEntity forgotPassword(@RequestParam(required = false) String email, @RequestParam(required = false) String phone) throws Exception {
+        if(phone==null&&email==null)    throw new Exception();
+        User user = phone!=null?userService.getUserByPhone("+"+phone.trim())[0]:userService.getUserByEmail(email);
+        int otp = SmsUtil.sendPasswordResetOtp(user.getPhone());
+        return  ResponseEntity.status(HttpStatus.OK).body(new LoginResponse("200", "Success", Security.encrypt(user.getEmail()+"|"+user.getPhone()+"|"+otp, ENCRYPT_KEY_A)));
+    }
+
+    @PutMapping("resetPassword")
+    private ResponseEntity resetPassword(@RequestHeader String token, @RequestBody PasswordReset passwordReset, @RequestParam(required = false) String type) throws InvalidTokenException, InvalidUserDetailsException {
+        User user = StringUtil.equals(type, "forgot")?userService.getUserByEmail(Security.decrypt(Security.decrypt(token, ENCRYPT_KEY_B), ENCRYPT_KEY_A).split("\\|")[0]):userService.getUserById(TokenUtil.authorizeApi(token, "delta"));
+        user.setPassword(Security.encrypt(passwordReset.getPassword(), AES_SECRET));
+        userService.addUser(user);
+        token = TokenUtil.getToken(user);
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.set("token", token);
+        return new ResponseEntity(new LoginResponse("200", "Password Reset Success", token), responseHeaders, HttpStatus.OK);
     }
 }
