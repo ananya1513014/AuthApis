@@ -33,4 +33,5 @@ public class User {
     @Size(min = 13, max = 13)
     String phone;
     String userType = "client";
+    String deviceId;
 }

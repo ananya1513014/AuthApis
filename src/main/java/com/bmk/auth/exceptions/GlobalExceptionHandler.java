@@ -5,11 +5,19 @@ import com.bmk.auth.response.out.InvalidFieldResponse;
 import com.bmk.auth.response.out.Response;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.twilio.exception.ApiException;
+import lombok.NoArgsConstructor;
 import org.hibernate.validator.internal.engine.ConstraintViolationImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageConversionException;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import javax.validation.ConstraintViolation;
@@ -17,7 +25,8 @@ import javax.validation.ConstraintViolationException;
 import java.util.ArrayList;
 import java.util.List;
 
-@ControllerAdvice
+@RestControllerAdvice
+@NoArgsConstructor
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(InvalidOtpException.class)
@@ -53,7 +62,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(JsonProcessingException.class)
     public ResponseEntity exceptionHandler(JsonProcessingException e) {
         logger.info(e);
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response("400", "Invalid request format"));
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response("401", "Json Invalid request format. "));
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
@@ -64,6 +73,18 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         for (int i=0; i<constraintViolations.length; i++) {
             ConstraintViolationImpl constraintViolation = (ConstraintViolationImpl)constraintViolations[i];
             InvalidFieldResponse invalidFieldResponse = new InvalidFieldResponse(constraintViolation.getPropertyPath().toString(), constraintViolation.getMessage());
+            invalidFieldResponseList.add(invalidFieldResponse);
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse("400", "Request has some invalid values", invalidFieldResponseList));
+    }
+
+    @ExceptionHandler(InvalidRequestBody.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity exceptionHandler(InvalidRequestBody e) {
+        logger.info(e);
+        List<InvalidFieldResponse> invalidFieldResponseList = new ArrayList<>();
+        for(FieldError fieldError: e.getErrors().getFieldErrors()) {
+            InvalidFieldResponse invalidFieldResponse = new InvalidFieldResponse(fieldError.getField(), fieldError.getDefaultMessage());
             invalidFieldResponseList.add(invalidFieldResponse);
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse("400", "Request has some invalid values", invalidFieldResponseList));

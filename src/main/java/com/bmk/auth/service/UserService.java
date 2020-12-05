@@ -6,19 +6,17 @@ import com.bmk.auth.exceptions.InvalidUserDetailsException;
 import com.bmk.auth.repository.UserRepo;
 import com.bmk.auth.request.LoginRequest;
 import com.bmk.auth.util.Security;
-import org.junit.Assert;
+import com.bmk.auth.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
 @Service
 public class UserService {
 
     private static UserRepo userRepo;
-    private final static String AES_SECRET = System.getenv("aesSecret");
+    private static final String AES_SECRET = System.getenv("aesSecret");
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
     @Autowired
@@ -26,18 +24,17 @@ public class UserService {
         this.userRepo = userRepo;
     }
 
-    public User addUser(User user) throws DuplicateUserException {
+    public User addUser(User user) {
         logger.info("Adding new user");
-        if(userRepo.findByEmail(user.getEmail()) != null)
-            throw new DuplicateUserException(user.getEmail());
         return userRepo.save(user);
     }
 
     public UserService verifyCred(LoginRequest loginRequest) throws InvalidUserDetailsException {
-        logger.info("Verifying Credentials");
+        logger.info("Verifying Credentials: "+AES_SECRET);
         User user = userRepo.findByEmail(loginRequest.getEmail());
         if(user==null)  throw new InvalidUserDetailsException();
-        Assert.assertEquals(user.getPassword(), Security.encrypt(loginRequest.getPassword(), AES_SECRET));
+        boolean isValid = StringUtil.equals(user.getPassword(), Security.encrypt(loginRequest.getPassword(), AES_SECRET));
+        if(!isValid) throw new InvalidUserDetailsException();
         logger.info("Credentials verified successfully");
         return this;
     }
