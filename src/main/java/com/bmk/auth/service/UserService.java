@@ -30,7 +30,6 @@ public class UserService {
     }
 
     public UserService verifyCred(LoginRequest loginRequest) throws InvalidUserDetailsException {
-        logger.info("Verifying Credentials: "+AES_SECRET);
         User user = userRepo.findByEmail(loginRequest.getEmail());
         if(user==null)  throw new InvalidUserDetailsException();
         boolean isValid = StringUtil.equals(user.getPassword(), Security.encrypt(loginRequest.getPassword(), AES_SECRET));

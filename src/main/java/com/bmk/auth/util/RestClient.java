@@ -11,20 +11,17 @@ public class RestClient {
     public static final String AUTH_TOKEN = System.getenv("twilioToken");
     public static final String TWILIO_PHONE = System.getenv("twilioPhone");
 
-    public static int sendOtp(String phoneNumber) {
+    public static void sendOtp(String phoneNumber, String messageText) {
         log.info("Sending otp to " + phoneNumber);
-        int otp = Helper.generateOtp();
-
         Twilio.init(ACCOUNT_SID, AUTH_TOKEN);
 
         Message message = Message
                 .creator(new PhoneNumber(phoneNumber), // to
                         new PhoneNumber(TWILIO_PHONE), // from
-                        "Welcome to BookMyKainchi! " + otp + " is your OTP for registering your account. Kindly do not share this OTP with anyone")
+                        messageText)
                 .create();
 
         log.info(message.getSid());
-        return otp;
     }
 
 }

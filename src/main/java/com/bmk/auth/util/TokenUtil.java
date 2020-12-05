@@ -44,9 +44,10 @@ public class TokenUtil {
         return builder.compact();
     }
 
-     public static void authorizeApi(String token, String apiType) throws InvalidTokenException {
+     public static Long authorizeApi(String token, String apiType) throws InvalidTokenException {
         System.out.println(getUserId(token)+" "+apiType+" "+accessMap.get(getUserType(token)));
         if(!accessMap.get(getUserType(token)).contains(apiType)) throw new InvalidTokenException();
+        return Long.parseLong(getUserId(token));
     }
 
     public static String getUserId(String jwt) throws InvalidTokenException {
