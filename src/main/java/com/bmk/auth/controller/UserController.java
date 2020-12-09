@@ -9,12 +9,10 @@ import com.bmk.auth.response.out.LoginResponse;
 import com.bmk.auth.response.out.UserListResponse;
 import com.bmk.auth.util.TokenUtil;
 import com.bmk.auth.util.*;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.bmk.auth.response.out.Response;
 import com.bmk.auth.bo.User;
 import com.bmk.auth.request.LoginRequest;
 import com.bmk.auth.service.UserService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +32,6 @@ public class UserController {
     private static final Logger logger = LoggerFactory.getLogger(UserController.class);
     private final UserService userService;
 
-    TokenUtil tokenUtil = new TokenUtil();
     private static final String ENCRYPT_KEY_A = System.getenv("encryptKeyA");
     private static final String ENCRYPT_KEY_B = System.getenv("encryptKeyB");
     private static final String AES_SECRET = System.getenv("aesSecret");
