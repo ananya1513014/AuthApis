@@ -31,7 +31,7 @@ public class UserController {
 
     private static final Logger logger = LoggerFactory.getLogger(UserController.class);
     private final UserService userService;
-
+    TokenUtil tokenUtil = new TokenUtil(); //Do not remove
     private static final String ENCRYPT_KEY_A = System.getenv("encryptKeyA");
     private static final String ENCRYPT_KEY_B = System.getenv("encryptKeyB");
     private static final String AES_SECRET = System.getenv("aesSecret");

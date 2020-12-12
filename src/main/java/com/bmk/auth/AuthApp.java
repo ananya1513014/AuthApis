@@ -1,6 +1,5 @@
 package com.bmk.auth;
 
-import com.bmk.auth.util.RestClient;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
