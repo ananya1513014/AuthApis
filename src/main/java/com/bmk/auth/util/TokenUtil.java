@@ -47,12 +47,12 @@ public class TokenUtil {
      public static Long authorizeApi(String token, String apiType) throws InvalidTokenException {
         System.out.println(getUserId(token)+" "+apiType+" "+accessMap.get(getUserType(token)));
         if(!accessMap.get(getUserType(token)).contains(apiType)) throw new InvalidTokenException();
-        return Long.parseLong(getUserId(token));
+        return getUserId(token);
     }
 
-    public static String getUserId(String jwt) throws InvalidTokenException {
+    public static Long getUserId(String jwt) throws InvalidTokenException {
         try {
-            return getClaim(jwt).getId();
+            return Long.parseLong(getClaim(jwt).getId());
         } catch(Exception exp){
             throw new InvalidTokenException();
         }
