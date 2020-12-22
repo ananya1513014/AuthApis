@@ -1,0 +1,364 @@
+swagger: '2.0'
+info:
+  version: '1.0'
+  title: BMK
+  contact: {}
+host: bmkauth.herokuapp.com
+basePath: /
+schemes:
+  - https
+consumes:
+  - application/json
+produces:
+  - application/json
+paths:
+  /api/v1/user/signup:
+    post:
+      summary: SignUp
+      tags:
+        - Misc
+      operationId: SignUp
+      deprecated: false
+      produces:
+        - application/json
+      parameters:
+        - name: token
+          in: header
+          required: true
+          type: string
+          description: ''
+        - name: Body
+          in: body
+          required: true
+          description: ''
+          schema:
+            $ref: '#/definitions/SignUpRequest'
+      responses:
+        '200':
+          description: ''
+          headers: {}
+  /api/v1/user/singin:
+    post:
+      summary: Login
+      tags:
+        - Misc
+      operationId: Login
+      deprecated: false
+      produces:
+        - application/json
+      parameters:
+        - name: Body
+          in: body
+          required: true
+          description: ''
+          schema:
+            $ref: '#/definitions/LoginRequest'
+      responses:
+        '200':
+          description: ''
+          headers: {}
+  /api/v1/user/deviceId:
+    get:
+      summary: Get DeviceId
+      tags:
+        - Misc
+      operationId: GetDeviceId
+      deprecated: false
+      produces:
+        - application/json
+      parameters:
+        - name: userId
+          in: query
+          required: true
+          type: integer
+          format: int32
+          description: ''
+      responses:
+        '200':
+          description: ''
+          headers: {}
+  /api/v1/user/details:
+    get:
+      summary: Get User Info
+      tags:
+        - Misc
+      operationId: GetUserInfo
+      deprecated: false
+      produces:
+        - application/json
+      parameters:
+        - name: token
+          in: header
+          required: true
+          type: string
+          description: ''
+      responses:
+        '200':
+          description: ''
+          headers: {}
+  /api/v1/user/all:
+    get:
+      description: accessible by superusers
+      summary: Get all users
+      tags:
+        - Misc
+      operationId: Getallusers
+      deprecated: false
+      produces:
+        - application/json
+      parameters:
+        - name: token
+          in: header
+          required: true
+          type: string
+          description: ''
+      responses:
+        '200':
+          description: ''
+          headers: {}
+  /api/v1/user/verifyUniqueDetails:
+    post:
+      summary: Verify Unique Details
+      tags:
+        - Misc
+      operationId: VerifyUniqueDetails
+      deprecated: false
+      produces:
+        - application/json
+      parameters:
+        - name: Body
+          in: body
+          required: true
+          description: ''
+          schema:
+            $ref: '#/definitions/VerifyUniqueDetailsRequest'
+      responses:
+        '200':
+          description: ''
+          headers: {}
+  /api/v1/user/validateOtp:
+    put:
+      summary: Validate Otp
+      tags:
+        - Misc
+      operationId: ValidateOtp
+      deprecated: false
+      produces:
+        - application/json
+      parameters:
+        - name: token
+          in: header
+          required: true
+          type: string
+          description: ''
+        - name: Body
+          in: body
+          required: true
+          description: ''
+          schema:
+            $ref: '#/definitions/ValidateOtpRequest'
+      responses:
+        '200':
+          description: ''
+          headers: {}
+  /api/v1/user/forgotPassword:
+    put:
+      summary: ForgotPassword
+      tags:
+        - Misc
+      operationId: ForgotPassword
+      deprecated: false
+      produces:
+        - application/json
+      parameters:
+        - name: phone
+          in: query
+          required: true
+          type: string
+          description: ''
+        - name: email
+          in: query
+          required: true
+          type: string
+          description: ''
+      responses:
+        '200':
+          description: ''
+          headers: {}
+  /api/v1/user/resetPassword:
+    put:
+      summary: ResetPassword
+      tags:
+        - Misc
+      operationId: ResetPassword
+      deprecated: false
+      produces:
+        - application/json
+      parameters:
+        - name: token
+          in: header
+          required: true
+          type: string
+          description: ''
+        - name: Body
+          in: body
+          required: true
+          description: ''
+          schema:
+            $ref: '#/definitions/ResetPasswordRequest'
+      responses:
+        '200':
+          description: ''
+          headers: {}
+  /bank:
+    post:
+      summary: AddBankAccount
+      tags:
+        - Misc
+      operationId: AddBankAccount
+      deprecated: false
+      produces:
+        - application/json
+      parameters:
+        - name: token
+          in: header
+          required: true
+          type: string
+          description: ''
+        - name: Body
+          in: body
+          required: true
+          description: ''
+          schema:
+            $ref: '#/definitions/AddBankAccountRequest'
+      responses:
+        '200':
+          description: ''
+          headers: {}
+    get:
+      summary: GetBankDetails
+      tags:
+        - Misc
+      operationId: GetBankDetails
+      deprecated: false
+      produces:
+        - application/json
+      parameters:
+        - name: token
+          in: header
+          required: true
+          type: string
+          description: ''
+      responses:
+        '200':
+          description: ''
+          headers: {}
+definitions:
+  SignUpRequest:
+    title: SignUpRequest
+    example:
+      name: Aman Raj
+      gender: male
+      password: password
+      phone: '+919639837481'
+      email: amanraj464@gmail.com
+      dateOfBirth: '1997-06-30'
+      userType: client
+    type: object
+    properties:
+      name:
+        type: string
+      gender:
+        type: string
+      password:
+        type: string
+      phone:
+        type: string
+      email:
+        type: string
+      dateOfBirth:
+        type: string
+      userType:
+        type: string
+    required:
+      - name
+      - gender
+      - password
+      - phone
+      - email
+      - dateOfBirth
+      - userType
+  LoginRequest:
+    title: LoginRequest
+    example:
+      email: hi@ananya.codes
+      password: password
+      deviceId: 625gsyj2n2nnnnnn
+    type: object
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+      deviceId:
+        type: string
+    required:
+      - email
+      - password
+      - deviceId
+  VerifyUniqueDetailsRequest:
+    title: VerifyUniqueDetailsRequest
+    example:
+      phone: '+919639837481'
+      email: hi@ananya.codes
+    type: object
+    properties:
+      phone:
+        type: string
+      email:
+        type: string
+    required:
+      - phone
+      - email
+  ValidateOtpRequest:
+    title: ValidateOtpRequest
+    example:
+      otp: 506808
+    type: object
+    properties:
+      otp:
+        type: integer
+        format: int32
+    required:
+      - otp
+  ResetPasswordRequest:
+    title: ResetPasswordRequest
+    example:
+      password: password
+    type: object
+    properties:
+      password:
+        type: string
+    required:
+      - password
+  AddBankAccountRequest:
+    title: AddBankAccountRequest
+    example:
+      accountNumber: '989819190000'
+      ifscCode: ICIC0000040
+      holderName: Ananya Goel
+    type: object
+    properties:
+      accountNumber:
+        type: string
+      ifscCode:
+        type: string
+      holderName:
+        type: string
+    required:
+      - accountNumber
+      - ifscCode
+      - holderName
+tags:
+  - name: Misc
+    description: ''
