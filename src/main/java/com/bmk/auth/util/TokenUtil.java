@@ -16,7 +16,7 @@ import java.util.*;
 public class TokenUtil {
 
     private final static String SECRET_KEY = System.getenv(Constants.SECRET_PARAM_KEY);
-    private final static long ttlMillis = 1000000000;
+    private final static long ttlMillis = 172800000;    // 2*24*60*60*1000
     private static Map<String, List<String>> accessMap;
     static SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
     static long nowMillis = System.currentTimeMillis();
@@ -37,7 +37,7 @@ public class TokenUtil {
         JwtBuilder builder = Jwts.builder().setId(user.getStaticUserId().toString()).setIssuedAt(now).setSubject(user.getUserType()).setIssuer("issuwr").signWith(signatureAlgorithm, signingKey);
 
         if(ttlMillis > 0) {
-            long expMillis = nowMillis + ttlMillis;
+            long expMillis = System.currentTimeMillis() + ttlMillis;
             Date exp = new Date(expMillis);
             builder.setExpiration(exp);
         }

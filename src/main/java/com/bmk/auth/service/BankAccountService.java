@@ -22,6 +22,10 @@ public class BankAccountService {
     }
 
     public BankAccount getBankAccount(Long userId) {
-        return bankAccountRepo.findById(userId).get();
+        try {
+            return bankAccountRepo.findById(userId).get();
+        } catch (Exception e) {
+            return null;
+        }
     }
 }
