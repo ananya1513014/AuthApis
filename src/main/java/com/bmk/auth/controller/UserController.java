@@ -42,7 +42,7 @@ public class UserController {
     }
 
     @PostMapping("/signup")
-    private ResponseEntity createUser(@RequestBody User user, @RequestHeader(required = false) String token) throws Throwable {
+    private ResponseEntity createUser(@RequestBody @Valid User user, @RequestHeader(required = false) String token) throws Throwable {
         try {
             logger.info(user.toString());
 

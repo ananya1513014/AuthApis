@@ -7,17 +7,20 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.twilio.exception.ApiException;
 import lombok.NoArgsConstructor;
 import org.hibernate.validator.internal.engine.ConstraintViolationImpl;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import javax.validation.ConstraintViolationException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @RestControllerAdvice
 @NoArgsConstructor
@@ -88,6 +91,21 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     private ResponseEntity exceptionHandler(SessionNotFoundException e) {
         logger.info(e);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response("400", e.getMessage()));
+    }
+
+    @Override
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
+                                                                  HttpHeaders headers,
+                                                                  HttpStatus status, WebRequest request) {
+
+        List<String> errors = ex.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .map(x -> x.getField()+":"+x.getDefaultMessage())
+                .collect(Collectors.toList());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response("400", errors));
+
     }
 
     @ExceptionHandler(Exception.class)
