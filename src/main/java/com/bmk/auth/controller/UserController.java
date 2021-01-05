@@ -84,7 +84,7 @@ public class UserController {
     }
 
     @GetMapping("/details")
-    private ResponseEntity getUserDetails(@RequestHeader String token, @RequestParam(required = false) Long userId) throws InvalidTokenException, InvalidUserDetailsException {
+    private ResponseEntity getUserDetails(@RequestHeader(required = false) String token, @RequestParam(required = false) Long userId) throws InvalidTokenException, InvalidUserDetailsException {
         userId = userId==null ? TokenUtil.getUserId(token) : userId;
         return ResponseEntity.ok(new Response("200", userService.getUserById(userId)));
     }
