@@ -42,7 +42,7 @@ public class UserController {
     }
 
     @PostMapping("/signup")
-    private ResponseEntity createUser(@RequestBody @Valid User user, @RequestHeader(required = false) String token) throws Throwable {
+    private ResponseEntity<Response> createUser(@RequestBody @Valid User user, @RequestHeader(required = false) String token) throws Throwable {
         try {
             logger.info(user.toString());
 
@@ -57,7 +57,7 @@ public class UserController {
     }
 
     @PostMapping("/singin")
-    private ResponseEntity login(@RequestBody @Valid LoginRequest loginRequest, Errors errors) throws InvalidUserDetailsException, DuplicateUserException, InvalidRequestBody {
+    private ResponseEntity<LoginResponse> login(@RequestBody @Valid LoginRequest loginRequest, Errors errors) throws InvalidUserDetailsException, InvalidRequestBody {
         if(errors.hasErrors()) throw new InvalidRequestBody(errors);
         logger.info(loginRequest.toString(), " Signin");
         userService.verifyCred(loginRequest);
@@ -68,49 +68,49 @@ public class UserController {
         String token = TokenUtil.getToken(user);
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.set("token", token);
-        return new ResponseEntity(new LoginResponse("200", "Login Success", token), responseHeaders, HttpStatus.OK);
+        return new ResponseEntity<>(new LoginResponse("200", "Login Success", token), responseHeaders, HttpStatus.OK);
     }
 
     @PostMapping("/authorize")
-    private ResponseEntity authorize(@RequestHeader("token") String token, @RequestHeader String apiType) throws InvalidTokenException {
+    private ResponseEntity<Response> authorize(@RequestHeader("token") String token, @RequestHeader String apiType) throws InvalidTokenException {
         TokenUtil.authorizeApi(token, apiType);
         return ResponseEntity.ok(new Response("200", "Authorized :"+ TokenUtil.getUserId(token)));
     }
 
     @GetMapping("/deviceId")
-    private ResponseEntity getDeviceId(@RequestParam Long userId) throws InvalidUserDetailsException {
+    private ResponseEntity<DeviceIdResponse> getDeviceId(@RequestParam Long userId) throws InvalidUserDetailsException {
         String deviceId = userService.getUserById(userId).getDeviceId();
         return ResponseEntity.ok(new DeviceIdResponse("200", "Success", deviceId));
     }
 
     @GetMapping("/details")
-    private ResponseEntity getUserDetails(@RequestHeader(required = false) String token, @RequestParam(required = false) Long userId) throws InvalidTokenException, InvalidUserDetailsException {
+    private ResponseEntity<Response> getUserDetails(@RequestHeader(required = false) String token, @RequestParam(required = false) Long userId) throws InvalidTokenException, InvalidUserDetailsException {
         userId = userId==null ? TokenUtil.getUserId(token) : userId;
         return ResponseEntity.ok(new Response("200", userService.getUserById(userId)));
     }
 
     @GetMapping("/all")
-    private ResponseEntity getAllUsers(@RequestHeader String token) throws InvalidTokenException {
+    private ResponseEntity<UserListResponse> getAllUsers(@RequestHeader String token) throws InvalidTokenException {
         TokenUtil.authorizeApi(token, "alpha");
         return ResponseEntity.ok(new UserListResponse("200", "Success", userService.getAllUsers()));
     }
 
     @PostMapping("verifyUniqueDetails")
-    private  ResponseEntity validateDetails(@RequestBody SignupVal signupVal) throws DuplicateUserException {
+    private ResponseEntity<LoginResponse> validateDetails(@RequestBody SignupVal signupVal) throws DuplicateUserException {
         userService.isNumberEmailAvailable(signupVal.getPhone(), signupVal.getEmail());
         int otp = SmsUtil.sendNewUserOtp(signupVal.getPhone());
         return  ResponseEntity.status(HttpStatus.OK).body(new LoginResponse("200", "Success", Security.encrypt(signupVal.getEmail()+"|"+signupVal.getPhone()+"|"+otp, ENCRYPT_KEY_A)));
     }
 
     @PutMapping("validateOtp")
-    private ResponseEntity validateOtp(@RequestHeader String token, @RequestBody OtpVal otpVal) throws InvalidOtpException {
+    private ResponseEntity<LoginResponse> validateOtp(@RequestHeader String token, @RequestBody OtpVal otpVal) throws InvalidOtpException {
         int otp = Integer.parseInt(Security.decrypt(token, ENCRYPT_KEY_A).split("\\|")[2]);
         if(otp!=otpVal.getOtp()) throw new InvalidOtpException();
         return  ResponseEntity.status(HttpStatus.OK).body(new LoginResponse("200", "Success", Security.encrypt(token, ENCRYPT_KEY_B)));
     }
 
     @PutMapping("forgotPassword")
-    private ResponseEntity forgotPassword(@RequestParam(required = false) String email, @RequestParam(required = false) String phone) throws Exception {
+    private ResponseEntity<LoginResponse> forgotPassword(@RequestParam(required = false) String email, @RequestParam(required = false) String phone) throws Exception {
         if(phone==null&&email==null)    throw new Exception();
         User user = phone!=null?userService.getUserByPhone("+"+phone.trim())[0]:userService.getUserByEmail(email);
         int otp = SmsUtil.sendPasswordResetOtp(user.getPhone());
@@ -118,13 +118,13 @@ public class UserController {
     }
 
     @PutMapping("resetPassword")
-    private ResponseEntity resetPassword(@RequestHeader String token, @RequestBody PasswordReset passwordReset, @RequestParam(required = false) String type) throws InvalidTokenException, InvalidUserDetailsException {
+    private ResponseEntity<LoginResponse> resetPassword(@RequestHeader String token, @RequestBody PasswordReset passwordReset, @RequestParam(required = false) String type) throws InvalidTokenException, InvalidUserDetailsException {
         User user = StringUtil.equals(type, "forgot")?userService.getUserByEmail(Security.decrypt(Security.decrypt(token, ENCRYPT_KEY_B), ENCRYPT_KEY_A).split("\\|")[0]):userService.getUserById(TokenUtil.authorizeApi(token, "delta"));
         user.setPassword(Security.encrypt(passwordReset.getPassword(), AES_SECRET));
         userService.addUser(user);
         token = TokenUtil.getToken(user);
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.set("token", token);
-        return new ResponseEntity(new LoginResponse("200", "Password Reset Success", token), responseHeaders, HttpStatus.OK);
+        return new ResponseEntity<>(new LoginResponse("200", "Password Reset Success", token), responseHeaders, HttpStatus.OK);
     }
 }
