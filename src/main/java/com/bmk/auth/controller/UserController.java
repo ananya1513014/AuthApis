@@ -1,5 +1,6 @@
 package com.bmk.auth.controller;
 
+import com.bmk.auth.dto.AuthDTO;
 import com.bmk.auth.exceptions.*;
 import com.bmk.auth.request.OtpVal;
 import com.bmk.auth.request.PasswordReset;
@@ -24,6 +25,7 @@ import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.Optional;
 
 @RequestMapping(Constants.USER_ENDPOINT)
 @RestController
@@ -54,6 +56,34 @@ public class UserController {
         } catch (TransactionSystemException e) {
             throw e.getCause().getCause();
         }
+    }
+
+    @PostMapping("auth")
+    private ResponseEntity auth(@RequestBody AuthDTO authDTO) {
+        int otp = SmsUtil.sendNewUserOtp(authDTO.getPhone());
+        return  ResponseEntity.status(HttpStatus.OK).body(new LoginResponse("200", "Success", Security.encrypt(authDTO.getPhone()+"|"+otp, ENCRYPT_KEY_A)));
+    }
+
+    @PostMapping("otp/validate")
+    private ResponseEntity otpValidate(@RequestHeader String token, @RequestBody OtpVal otpVal) throws InvalidOtpException {
+        String[] vals = Security.decrypt(token, ENCRYPT_KEY_A).split("\\|");
+        int otp = Integer.parseInt(vals[1]);
+        if (otp != otpVal.getOtp()) throw new InvalidOtpException();
+
+        String phone = vals[0];
+        Optional<User> userOpt = userService.getUserByPhone(phone);
+        User user;
+        if (userOpt.isPresent()) {
+            user = userOpt.get();
+            user.setDeviceId(otpVal.getDeviceId());
+            userService.addUser(user);
+        } else {
+            user = userService.addUser(User.builder().userType("client").phone(phone).deviceId(otpVal.getDeviceId()).build());
+        }
+        String jwtToken = TokenUtil.getToken(user);
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.set("token", jwtToken);
+        return new ResponseEntity<>(new LoginResponse("200", "Login Success", jwtToken), responseHeaders, HttpStatus.OK);
     }
 
     @PostMapping("/singin")
@@ -111,10 +141,10 @@ public class UserController {
 
     @PutMapping("forgotPassword")
     private ResponseEntity<LoginResponse> forgotPassword(@RequestParam(required = false) String email, @RequestParam(required = false) String phone) throws Exception {
-        if(phone==null&&email==null)    throw new Exception();
-        User user = phone!=null?userService.getUserByPhone("+"+phone.trim())[0]:userService.getUserByEmail(email);
+        if (phone == null && email == null) throw new Exception();
+        User user = phone != null ? userService.getUserByPhone("+" + phone.trim()).get() : userService.getUserByEmail(email);
         int otp = SmsUtil.sendPasswordResetOtp(user.getPhone());
-        return  ResponseEntity.status(HttpStatus.OK).body(new LoginResponse("200", "Success", Security.encrypt(user.getEmail()+"|"+user.getPhone()+"|"+otp, ENCRYPT_KEY_A)));
+        return ResponseEntity.status(HttpStatus.OK).body(new LoginResponse("200", "Success", Security.encrypt(user.getEmail() + "|" + user.getPhone() + "|" + otp, ENCRYPT_KEY_A)));
     }
 
     @PutMapping("resetPassword")

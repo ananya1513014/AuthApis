@@ -13,6 +13,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
+import javax.swing.text.html.Option;
+import java.util.Optional;
+
 @Service
 public class UserService {
 
@@ -60,12 +63,12 @@ public class UserService {
         return userRepo.findAllByStaticUserIdAfter(Long.parseLong("0"));
     }
 
-    public User[] getUserByPhone(String phoneNumber) {
+    public Optional<User> getUserByPhone(String phoneNumber) {
         return userRepo.findByPhone(phoneNumber);
     }
 
     public void isNumberEmailAvailable(String phone, String email) throws DuplicateUserException {
-        if((getUserByPhone(phone).length!=0||getUserByEmail(email)!=null)&&!phone.equals("+918077019693"))
+        if((getUserByPhone(phone).isPresent()||getUserByEmail(email)!=null)&&!phone.equals("+918077019693"))
             throw new DuplicateUserException("User with given email/phone number  exists");
     }
 }
