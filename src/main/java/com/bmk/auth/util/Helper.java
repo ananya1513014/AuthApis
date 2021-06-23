@@ -3,13 +3,17 @@ package com.bmk.auth.util;
 import com.bmk.auth.bo.User;
 import com.bmk.auth.exceptions.InvalidTokenException;
 
+import java.text.DecimalFormat;
+import java.util.Random;
+
 public class Helper {
 
     private static final String ENCRYPT_KEY_A = System.getenv("encryptKeyA");
     private static final String ENCRYPT_KEY_B = System.getenv("encryptKeyB");
 
-    public static int generateOtp() {
-        return  (int)(Math.random()*1000000) % 1000000;
+    public static String generateOtp() {
+        String otp= new DecimalFormat("00000").format(new Random().nextInt(99999));
+        return otp;
     }
 
     public static void validateSignup(User user, String token) throws InvalidTokenException {

@@ -60,7 +60,7 @@ public class UserController {
 
     @PostMapping("auth")
     private ResponseEntity auth(@RequestBody AuthDTO authDTO) {
-        int otp = SmsUtil.sendNewUserOtp(authDTO.getPhone());
+        String otp = SmsUtil.sendNewUserOtp(authDTO.getPhone());
         return  ResponseEntity.status(HttpStatus.OK).body(new LoginResponse("200", "Success", Security.encrypt(authDTO.getPhone()+"|"+otp, ENCRYPT_KEY_A)));
     }
 
@@ -128,7 +128,7 @@ public class UserController {
     @PostMapping("verifyUniqueDetails")
     private ResponseEntity<LoginResponse> validateDetails(@RequestBody SignupVal signupVal) throws DuplicateUserException {
         userService.isNumberEmailAvailable(signupVal.getPhone(), signupVal.getEmail());
-        int otp = SmsUtil.sendNewUserOtp(signupVal.getPhone());
+        String otp = SmsUtil.sendNewUserOtp(signupVal.getPhone());
         return  ResponseEntity.status(HttpStatus.OK).body(new LoginResponse("200", "Success", Security.encrypt(signupVal.getEmail()+"|"+signupVal.getPhone()+"|"+otp, ENCRYPT_KEY_A)));
     }
 
@@ -143,7 +143,7 @@ public class UserController {
     private ResponseEntity<LoginResponse> forgotPassword(@RequestParam(required = false) String email, @RequestParam(required = false) String phone) throws Exception {
         if (phone == null && email == null) throw new Exception();
         User user = phone != null ? userService.getUserByPhone("+" + phone.trim()).get() : userService.getUserByEmail(email);
-        int otp = SmsUtil.sendPasswordResetOtp(user.getPhone());
+        String otp = SmsUtil.sendPasswordResetOtp(user.getPhone());
         return ResponseEntity.status(HttpStatus.OK).body(new LoginResponse("200", "Success", Security.encrypt(user.getEmail() + "|" + user.getPhone() + "|" + otp, ENCRYPT_KEY_A)));
     }
 
